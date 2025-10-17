@@ -32,6 +32,12 @@ export default function Header() {
         <Link href="/checklist" className="text-lg font-semibold text-blue-600 hover:underline">
           ✅ Checklist
         </Link>
+        <Link href="/habits" className="text-lg font-semibold text-blue-600 hover:underline">
+          🔁 Habits
+        </Link>
+        <Link href="/habits/view" className="text-lg font-semibold text-blue-600 hover:underline">
+          📅 Habits View
+        </Link>
       </div>
 
       <div className="flex items-center gap-4">
