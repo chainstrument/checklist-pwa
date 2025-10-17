@@ -11,7 +11,7 @@ import Header from '@/components/Header';
 export default function ChecklistPage() {
   const router = useRouter();
   const [sessionChecked, setSessionChecked] = useState(false);
-  type ChecklistItem = { id: number; text: string; checked?: boolean; created_at?: string };
+  type ChecklistItem = { id: number; text: string; checked: boolean; created_at?: string };
 
   const [user, setUser] = useState<User | null>(null);
   const [items, setItems] = useState<ChecklistItem[]>([]);
@@ -61,7 +61,18 @@ export default function ChecklistPage() {
     }
   };
 
-  // toggleItem removed because not yet wired to UI
+  const toggleItem = async (id: number, checked: boolean) => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('checklist')
+      .update({ checked: !checked })
+      .eq('id', id);
+
+    if (!error && user) {
+      fetchItems(user.id);
+    }
+  };
 
 const handleDelete = (id: number, text: string) => {
   if (confirm(`Voulez-vous vraiment supprimer "${text}" ?`)) {
@@ -110,8 +121,17 @@ const handleDelete = (id: number, text: string) => {
           <li key={item.id} className="flex justify-between items-center py-2 border-b">
             {/* Groupe checkbox + texte */}
                 <div className="flex items-center gap-2">
-                    <input type="checkbox" id={`item-${item.id}`} className="w-4 h-4" />
-                    <label htmlFor={`item-${item.id}`} className="select-none">
+                    <input 
+                      type="checkbox" 
+                      id={`item-${item.id}`} 
+                      className="w-4 h-4"
+                      checked={item.checked}
+                      onChange={() => toggleItem(item.id, item.checked)}
+                    />
+                    <label 
+                      htmlFor={`item-${item.id}`} 
+                      className={`select-none ${item.checked ? 'line-through text-gray-500' : ''}`}
+                    >
                     {item.text}
                     </label>
                 </div>

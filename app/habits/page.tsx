@@ -18,7 +18,7 @@ export default function HabitsPage() {
   type HabitTask = { id: number; name: string; done_count: number; day: string; created_at?: string };
 
   const [user, setUser] = useState<User | null>(null);
-  const [taskName, setTaskName] = useState("Faire 10 push up");
+  const [taskName, setTaskName] = useState("");
   const [tasks, setTasks] = useState<HabitTask[]>([]);
 
   useEffect(() => {

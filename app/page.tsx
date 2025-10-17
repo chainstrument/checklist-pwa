@@ -34,7 +34,7 @@ export default function HomePage() {
     <>
     <Header />
       <main className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Bienvenue {user?.email}</h1>
+        <h1 className="text-2xl font-bold mb-4">Bienvenue  </h1>
         {/* ... le reste de ta checklist ici ... */}
          
 
