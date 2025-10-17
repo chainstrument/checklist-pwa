@@ -1,94 +1,49 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
-type Item = {
-  id: string;
-  text: string;
-  checked: boolean;
-};
-
-export default function Home() {
-  const [items, setItems] = useState<Item[]>([]);
-  const [newItem, setNewItem] = useState('');
+export default function HomePage() {
+  const router = useRouter();
+  const [sessionChecked, setSessionChecked] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    fetchItems();
-  }, []);
+    // Vérifie si l'utilisateur est connecté
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
 
-  async function fetchItems() {
-    const { data, error } = await supabase
-      .from('checklist')
-      .select('*')
-      .order('created_at', { ascending: true });
+      if (!session) {
+        router.push('/login'); // redirige si non connecté
+      } else {
+        setUser(session.user);
+      }
 
-    if (!error && data) setItems(data);
-  }
+      setSessionChecked(true); // on a vérifié
+    };
 
-  async function addItem() {
-    if (!newItem.trim()) return;
-    const { data, error } = await supabase
-      .from('checklist')
-      .insert({ text: newItem })
-      .select()
-      .single();
+    checkSession();
+  }, [router]);
 
-    if (data) {
-      setItems([...items, data]);
-      setNewItem('');
-    }
-  }
-
-  async function toggleCheck(item: Item) {
-    await supabase
-      .from('checklist')
-      .update({ checked: !item.checked })
-      .eq('id', item.id);
-    fetchItems();
-  }
-
-  async function deleteItem(id: string) {
-    await supabase.from('checklist').delete().eq('id', id);
-    fetchItems();
-  }
+  if (!sessionChecked) return null; // ou un spinner
 
   return (
-    <main className="p-6 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4">📝 Ma Checklist</h1>
+    <main className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Bienvenue {user?.email}</h1>
+      {/* ... le reste de ta checklist ici ... */}
+      <button
+        className="text-sm text-blue-600 underline mb-4 float-right"
+        onClick={async () => { 
+          router.push('/checklist');
+        }}
+        
+      >
+        Checklist
+      </button>
 
-      <div className="flex gap-2 mb-4">
-        <input
-          type="text"
-          value={newItem}
-          onChange={(e) => setNewItem(e.target.value)}
-          placeholder="Nouvelle tâche"
-          className="flex-grow border rounded px-2 py-1"
-        />
-        <button onClick={addItem} className="bg-blue-600 text-white px-3 py-1 rounded">
-          Ajouter
-        </button>
-      </div>
 
-      <ul>
-        {items.map((item) => (
-          <li key={item.id} className="flex items-center justify-between py-1">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={item.checked}
-                onChange={() => toggleCheck(item)}
-              />
-              <span className={item.checked ? 'line-through text-gray-500' : ''}>
-                {item.text}
-              </span>
-            </label>
-            <button onClick={() => deleteItem(item.id)} className="text-red-500">
-              Supprimer
-            </button>
-          </li>
-        ))}
-      </ul>
+
     </main>
   );
 }

@@ -1,0 +1,108 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+
+export default function ChecklistPage() {
+  const router = useRouter();
+  const [sessionChecked, setSessionChecked] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [items, setItems] = useState<any[]>([]);
+  const [newItem, setNewItem] = useState('');
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.push('/login');
+      } else {
+        setUser(session.user);
+        fetchItems(session.user.id);
+      }
+
+      setSessionChecked(true);
+    };
+
+    checkSession();
+  }, [router]);
+
+  const fetchItems = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('checklist')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (!error) setItems(data || []);
+  };
+
+  const addItem = async () => {
+    if (!newItem.trim()) return;
+
+    const { data, error } = await supabase
+      .from('checklist')
+      .insert({ text: newItem, user_id: user.id })
+      .select()
+      .single();
+
+    if (!error) {
+      setItems([data, ...items]);
+      setNewItem('');
+    }
+  };
+
+  const toggleItem = async (id: string, checked: boolean) => {
+    await supabase
+      .from('checklist')
+      .update({ checked: !checked })
+      .eq('id', id);
+
+    fetchItems(user.id);
+  };
+
+  if (!sessionChecked) return null;
+
+  return (
+    <main className="p-4 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Ma checklist</h1>
+
+      <button
+        onClick={async () => {
+          await supabase.auth.signOut();
+          router.push('/login');
+        }}
+        className="text-sm text-blue-600 underline mb-4 float-right"
+      >
+        Déconnexion
+      </button>
+
+      <input
+        className="w-full border p-2 mb-2"
+        placeholder="Nouvel item..."
+        value={newItem}
+        onChange={(e) => setNewItem(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && addItem()}
+      />
+      <button onClick={addItem} className="bg-blue-600 text-white w-full py-2 mb-4 rounded">
+        Ajouter
+      </button>
+
+      <ul>
+        {items.map((item) => (
+          <li key={item.id} className="flex items-center gap-2 mb-2">
+            <input
+              type="checkbox"
+              checked={item.checked}
+              onChange={() => toggleItem(item.id, item.checked)}
+            />
+            <span className={item.checked ? 'line-through text-gray-500' : ''}>
+              {item.text}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </main>
+  );
+}
