@@ -1,14 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+
+import Header from '@/components/Header';
+
 
 export default function ChecklistPage() {
   const router = useRouter();
   const [sessionChecked, setSessionChecked] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [items, setItems] = useState<any[]>([]);
+  type ChecklistItem = { id: number; text: string; checked?: boolean; created_at?: string };
+
+  const [user, setUser] = useState<User | null>(null);
+  const [items, setItems] = useState<ChecklistItem[]>([]);
   const [newItem, setNewItem] = useState('');
 
   useEffect(() => {
@@ -41,6 +47,8 @@ export default function ChecklistPage() {
   const addItem = async () => {
     if (!newItem.trim()) return;
 
+    if (!user) return;
+
     const { data, error } = await supabase
       .from('checklist')
       .insert({ text: newItem, user_id: user.id })
@@ -53,30 +61,38 @@ export default function ChecklistPage() {
     }
   };
 
-  const toggleItem = async (id: string, checked: boolean) => {
-    await supabase
+  // toggleItem removed because not yet wired to UI
+
+const handleDelete = (id: number, text: string) => {
+  if (confirm(`Voulez-vous vraiment supprimer "${text}" ?`)) {
+    deleteItem(id);
+  }
+};
+
+   async function deleteItem(id: number) {
+    const { error } = await supabase
       .from('checklist')
-      .update({ checked: !checked })
+      .delete()
       .eq('id', id);
 
-    fetchItems(user.id);
-  };
+    if (error) {
+      console.error('Erreur suppression:', error.message);
+    } else {
+      // Mise à jour locale après suppression
+      setItems(prev => prev.filter(item => item.id !== id));
+    }
+  }
+
 
   if (!sessionChecked) return null;
 
   return (
-    <main className="p-4 max-w-md mx-auto">
+    <>
+          <Header />
+     <main className="p-4 max-w-md mx-auto">
       <h1 className="text-2xl font-bold mb-4">Ma checklist</h1>
 
-      <button
-        onClick={async () => {
-          await supabase.auth.signOut();
-          router.push('/login');
-        }}
-        className="text-sm text-blue-600 underline mb-4 float-right"
-      >
-        Déconnexion
-      </button>
+     
 
       <input
         className="w-full border p-2 mb-2"
@@ -91,18 +107,26 @@ export default function ChecklistPage() {
 
       <ul>
         {items.map((item) => (
-          <li key={item.id} className="flex items-center gap-2 mb-2">
-            <input
-              type="checkbox"
-              checked={item.checked}
-              onChange={() => toggleItem(item.id, item.checked)}
-            />
-            <span className={item.checked ? 'line-through text-gray-500' : ''}>
-              {item.text}
-            </span>
+          <li key={item.id} className="flex justify-between items-center py-2 border-b">
+            {/* Groupe checkbox + texte */}
+                <div className="flex items-center gap-2">
+                    <input type="checkbox" id={`item-${item.id}`} className="w-4 h-4" />
+                    <label htmlFor={`item-${item.id}`} className="select-none">
+                    {item.text}
+                    </label>
+                </div>
+             <button
+             onClick={() => handleDelete(item.id, item.text)} 
+              className="ml-4 text-red-600 hover:underline"
+              aria-label={`Supprimer ${item.text}`}
+            >
+              Supprimer
+            </button>
           </li>
         ))}
       </ul>
     </main>
+    </>
+   
   );
 }

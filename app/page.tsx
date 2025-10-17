@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import Header from '@/components/Header';
 
 export default function HomePage() {
   const router = useRouter();
   const [sessionChecked, setSessionChecked] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     // Vérifie si l'utilisateur est connecté
@@ -29,21 +31,18 @@ export default function HomePage() {
   if (!sessionChecked) return null; // ou un spinner
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Bienvenue {user?.email}</h1>
-      {/* ... le reste de ta checklist ici ... */}
-      <button
-        className="text-sm text-blue-600 underline mb-4 float-right"
-        onClick={async () => { 
-          router.push('/checklist');
-        }}
-        
-      >
-        Checklist
-      </button>
+    <>
+    <Header />
+      <main className="p-4">
+        <h1 className="text-2xl font-bold mb-4">Bienvenue {user?.email}</h1>
+        {/* ... le reste de ta checklist ici ... */}
+         
 
 
 
-    </main>
-  );
+      </main>
+
+
+    </>
+      );
 }
