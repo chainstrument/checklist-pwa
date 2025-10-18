@@ -160,8 +160,22 @@ export default function ManageHabitsPage() {
                     {habit.description && <div className="text-sm text-gray-600">{habit.description}</div>}
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => startEdit(habit)} className="text-blue-600 underline" disabled={loading}>Modifier</button>
-                    <button onClick={() => handleDelete(habit.id, habit.name)} className="text-red-600 underline" disabled={loading}>Supprimer</button>
+                    <button
+                      onClick={() => startEdit(habit)}
+                      className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-700 border border-blue-300 shadow-sm transition"
+                      title="Modifier"
+                      disabled={loading}
+                    >
+                      <span role="img" aria-label="modifier">✏️</span>
+                    </button>
+                    <button
+                      onClick={() => handleDelete(habit.id, habit.name)}
+                      className="p-2 rounded-full bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 shadow-sm transition"
+                      title="Supprimer"
+                      disabled={loading}
+                    >
+                      <span role="img" aria-label="supprimer">🗑️</span>
+                    </button>
                   </div>
                 </>
               )}
