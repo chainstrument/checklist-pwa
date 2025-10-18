@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import SidebarMenu from './SidebarMenu';
 
 export default function Header() {
   const router = useRouter();
@@ -25,7 +26,10 @@ export default function Header() {
 
   return (
     <header className="flex items-center justify-between px-4 py-3 bg-gray-100 border-b mb-4">
-      <div className="flex items-center gap-6">
+      {/* Menu burger sur mobile */}
+      <SidebarMenu />
+      {/* Liens classiques sur desktop */}
+      <div className="gap-6 hidden md:flex items-center">
         <Link href="/" className="text-lg font-semibold text-gray-700 hover:text-blue-600">
           Accueil
         </Link>
@@ -44,7 +48,6 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-4">
-       
         <button
           onClick={handleLogout}
           className="text-sm text-red-600 underline"
