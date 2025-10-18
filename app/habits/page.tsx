@@ -130,17 +130,19 @@ export default function HabitsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    className="text-sm text-yellow-600 hover:underline"
+                    className="p-2 rounded-full bg-yellow-100 hover:bg-yellow-200 text-yellow-700 border border-yellow-300 shadow-sm transition"
+                    title="Retirer une validation"
                     onClick={() => handleMinus(habit)}
                     disabled={!counts[habit.id]}
                   >
-                    -1
+                    <span role="img" aria-label="moins">➖</span>
                   </button>
                   <button
-                    className="text-sm text-blue-600 hover:underline"
+                    className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-700 border border-blue-300 shadow-sm transition"
+                    title="Ajouter une validation"
                     onClick={() => handlePlus(habit)}
                   >
-                    +1
+                    <span role="img" aria-label="plus">➕</span>
                   </button>
                 </div>
               </li>
