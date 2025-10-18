@@ -38,6 +38,9 @@ export default function Header() {
         <Link href="/habits/view" className="text-lg font-semibold text-blue-600 hover:underline">
           📅  
         </Link>
+        <Link href="/habits/manage" className="text-lg font-semibold text-blue-600 hover:underline">
+          ⚙️  
+        </Link>
       </div>
 
       <div className="flex items-center gap-4">

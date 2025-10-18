@@ -29,9 +29,9 @@ export default function HabitView() {
   const [selectedDay, setSelectedDay] = useState<string>(formatDate(now));
 
   const [dayTotals, setDayTotals] = useState<Record<string, number>>({});
-  type HabitRow = { id: number; name: string; done_count: number; day: string; created_at?: string };
-  type AggregateRow = { day: string; done_count: number };
-  const [dayTasks, setDayTasks] = useState<HabitRow[]>([]);
+  type HabitEventAgg = { event_date: string; total: number };
+  type HabitDetail = { id: number; name: string; description?: string; count: number };
+  const [dayTasks, setDayTasks] = useState<HabitDetail[]>([]);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -64,43 +64,65 @@ export default function HabitView() {
   const fetchMonthTotals = async (userId: string, y: number, m: number) => {
     const start = formatDate(startOfMonth(y, m));
     const end = formatDate(endOfMonth(y, m));
-
-    // aggregate sums by day
+    // aggregate sum(count) by event_date
     const { data, error } = await supabase
-      .from('habits_task')
-      .select('day, done_count')
+      .from('habit_events')
+      .select('event_date, count')
       .eq('user_id', userId)
-      .gte('day', start)
-      .lte('day', end);
-
+      .gte('event_date', start)
+      .lte('event_date', end);
     if (error) {
       console.error('Erreur fetchMonthTotals', error.message || error);
       return;
     }
-
     const totals: Record<string, number> = {};
-    (data || []).forEach((row: AggregateRow) => {
-      const d = row.day;
-      totals[d] = (totals[d] || 0) + (row.done_count || 0);
+    (data || []).forEach((row: { event_date: string; count: number }) => {
+      const d = row.event_date;
+      totals[d] = (totals[d] || 0) + (row.count || 1);
     });
-
     setDayTotals(totals);
   };
 
   const fetchTasksForDay = async (userId: string, day: string) => {
+    // Get all events for the user and day, group by habit_id, sum(count)
     const { data, error } = await supabase
-      .from('habits_task')
-      .select('*')
+      .from('habit_events')
+      .select('habit_id, count')
       .eq('user_id', userId)
-      .eq('day', day)
-      .order('created_at', { ascending: false });
-
+      .eq('event_date', day);
     if (error) {
       console.error('Erreur fetchTasksForDay', error.message || error);
+      setDayTasks([]);
       return;
     }
-
-  setDayTasks((data as HabitRow[]) || []);
+    // Aggregate counts by habit_id
+    const agg: Record<number, number> = {};
+    (data || []).forEach((row: { habit_id: number; count: number }) => {
+      agg[row.habit_id] = (agg[row.habit_id] || 0) + (row.count || 1);
+    });
+    // Fetch habit details for those habit_ids
+    const habitIds = Object.keys(agg).map(id => Number(id));
+    if (habitIds.length === 0) {
+      setDayTasks([]);
+      return;
+    }
+    const { data: habitsData, error: habitsError } = await supabase
+      .from('habits')
+      .select('id, name, description')
+      .in('id', habitIds);
+    if (habitsError) {
+      console.error('Erreur fetch habit details', habitsError.message || habitsError);
+      setDayTasks([]);
+      return;
+    }
+    // Merge
+    const details: HabitDetail[] = (habitsData || []).map((h: any) => ({
+      id: h.id,
+      name: h.name,
+      description: h.description,
+      count: agg[h.id] || 0
+    }));
+    setDayTasks(details);
   };
 
   if (!sessionChecked) return null;
@@ -172,13 +194,14 @@ export default function HabitView() {
 
         <section>
           <h2 className="text-xl font-semibold mb-2">Détails pour {selectedDay}</h2>
-          {dayTasks.length === 0 && <div className="text-gray-500">Aucune tâche pour ce jour.</div>}
+          {dayTasks.length === 0 && <div className="text-gray-500">Aucune habitude validée ce jour.</div>}
           <ul>
             {dayTasks.map((t) => (
               <li key={t.id} className="py-2 border-b flex justify-between items-center">
                 <div>
                   <div className="font-medium">{t.name}</div>
-                  <div className="text-sm text-gray-600">Fait: {t.done_count || 0} fois</div>
+                  {t.description && <div className="text-sm text-gray-600">{t.description}</div>}
+                  <div className="text-sm text-gray-600">Fait: {t.count} fois</div>
                 </div>
               </li>
             ))}
