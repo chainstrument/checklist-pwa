@@ -116,7 +116,7 @@ export default function HabitView() {
       return;
     }
     // Merge
-    const details: HabitDetail[] = (habitsData || []).map((h: any) => ({
+    const details: HabitDetail[] = (habitsData || []).map((h: { id: number; name: string; description?: string }) => ({
       id: h.id,
       name: h.name,
       description: h.description,
