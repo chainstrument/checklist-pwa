@@ -38,11 +38,11 @@ export default function SidebarMenu() {
           </button>
         </div>
         <ul className="flex flex-col gap-2 p-4">
-          <li><Link href="/" className="block py-2 px-3 rounded hover:bg-gray-100" onClick={() => setOpen(false)}>🏠 Accueil</Link></li>
-          <li><Link href="/checklist" className="block py-2 px-3 rounded hover:bg-gray-100" onClick={() => setOpen(false)}>✅ Checklist</Link></li>
-          <li><Link href="/habits" className="block py-2 px-3 rounded hover:bg-gray-100" onClick={() => setOpen(false)}>🔁 Habits</Link></li>
-          <li><Link href="/habits/view" className="block py-2 px-3 rounded hover:bg-gray-100" onClick={() => setOpen(false)}>📅 Vue calendrier</Link></li>
-          <li><Link href="/habits/manage" className="block py-2 px-3 rounded hover:bg-gray-100" onClick={() => setOpen(false)}>⚙️ Gérer habitudes</Link></li>
+          <li><Link href="/" className="block py-2 px-3 rounded hover:bg-gray-100 text-black" onClick={() => setOpen(false)}>🏠 Accueil</Link></li>
+          <li><Link href="/checklist" className="block py-2 px-3 rounded hover:bg-gray-100 text-black" onClick={() => setOpen(false)}>✅ Checklist</Link></li>
+          <li><Link href="/habits" className="block py-2 px-3 rounded hover:bg-gray-100 text-black" onClick={() => setOpen(false)}>🔁 Habits</Link></li>
+          <li><Link href="/habits/view" className="block py-2 px-3 rounded hover:bg-gray-100 text-black" onClick={() => setOpen(false)}>📅 Vue calendrier</Link></li>
+          <li><Link href="/habits/manage" className="block py-2 px-3 rounded hover:bg-gray-100 text-black" onClick={() => setOpen(false)}>⚙️ Gérer habitudes</Link></li>
         </ul>
       </nav>
     </>
